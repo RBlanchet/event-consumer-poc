@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  event-consumer:
+    build:
+      context: .
+    command: ['npm', 'run', 'start:debug']
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-mongodb://mongo/events}
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "3000:80"
+    networks:
+      - service
+  redis:
+    image: ghcr.io/telediag/redis:1.0.3
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - service
+  mongo:
+    image: mongo:4.4
+    command: --replSet rs0
+    ports:
+      - "27017"
+    networks:
+      - service
+networks:
+  service:
+    driver: bridge
+
+volumes:
+  redis_data:
